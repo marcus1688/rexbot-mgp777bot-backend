@@ -28,7 +28,7 @@ const initializeBot = async () => {
   const isProduction = process.env.NODE_ENV === "production";
   if (isProduction) {
     bot = new TelegramBot(token);
-    const webhookUrl = `https://api.luckybot7.com/webhook/${token}`;
+    const webhookUrl = `https://mgp777bot.luckybot7.com/webhook/${token}`;
     await bot.setWebHook(webhookUrl);
     console.log("📱 Telegram机器人已启动 (Webhook 模式)");
     console.log("Webhook URL:", webhookUrl);
@@ -305,7 +305,7 @@ const sendReportWithButton = (chatId, report) => {
       [
         {
           text: "🌍完整账单",
-          url: `https://luckybot7.com/report/${urlSafeChatId}`,
+          url: `https://luckybot7.com/report/${urlSafeChatId}?bot=mgp777`,
         },
       ],
     ],

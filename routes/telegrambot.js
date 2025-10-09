@@ -319,6 +319,7 @@ const sendReportWithButton = (chatId, report) => {
 
 const OWNER_IDS = [
   5342992954, 7901434688, 7849481867, 6900459191, 7668035205, 7739890736,
+  8383250846, 2129732648,
 ];
 
 // const checkPermission = async (chatId, userId) => {

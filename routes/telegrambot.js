@@ -132,6 +132,7 @@ const calculateStats = (transactions, currentFeeRate) => {
     return sum + (t.amount / t.rate) * (1 - feeRate / 100);
   }, 0);
   const totalPayoutUsdt = 代付.reduce((sum, t) => sum + t.usdt, 0);
+  const totalPayoutAmount = 代付.reduce((sum, t) => sum + t.amount, 0);
   const adjustedActualUsdt = totalActualUsdt - totalPayoutUsdt;
   return {
     入款,
@@ -142,6 +143,7 @@ const calculateStats = (transactions, currentFeeRate) => {
     totalOutUsdt,
     totalActualUsdt,
     totalPayoutUsdt,
+    totalPayoutAmount,
     adjustedActualUsdt,
   };
 };
@@ -243,6 +245,7 @@ const formatReport = async (chatId, newTransactionId = null) => {
           config.handlingFee
         }U=${t.usdt.toFixed(2)}U ${identifier}\n`;
       });
+      report += `\n代付总额：${formatNumber(stats.totalPayoutAmount)}\n`;
     }
 
     report += `\n今日下发（${stats.下发.length}笔）\n`;
@@ -902,6 +905,10 @@ const setupBotHandlers = () => {
         const unDispensed =
           Math.floor((stats.adjustedActualUsdt - stats.totalOutUsdt) * 100) /
           100;
+        const totalPayoutAmount = stats.代付.reduce(
+          (sum, t) => sum + t.amount,
+          0
+        );
         let message = `F${formatNumber(amount)}\n`;
         message += `应下发：${adjustedActualUsdt.toFixed(2)}U\n`;
         message += `已下发：${outUsdt.toFixed(2)}U\n`;
@@ -1252,6 +1259,7 @@ router.get("/api/report/:chatId", async (req, res) => {
       ...stats,
       totalActualUsdt: Math.floor(stats.totalActualUsdt * 100) / 100,
       totalOutUsdt: Math.floor(stats.totalOutUsdt * 100) / 100,
+      totalPayoutAmount: stats.totalPayoutAmount,
       transactionCount: {
         入款: stats.入款.length,
         下发: stats.下发.length,

@@ -1259,7 +1259,7 @@ router.get("/api/report/:chatId", async (req, res) => {
       ...stats,
       totalActualUsdt: Math.floor(stats.totalActualUsdt * 100) / 100,
       totalOutUsdt: Math.floor(stats.totalOutUsdt * 100) / 100,
-      totalPayoutAmount: stats.totalPayoutAmount,
+      totalPayoutAmount: Math.floor(stats.totalPayoutAmount * 100) / 100,
       transactionCount: {
         入款: stats.入款.length,
         下发: stats.下发.length,

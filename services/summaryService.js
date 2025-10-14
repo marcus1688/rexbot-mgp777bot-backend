@@ -9,6 +9,10 @@ class SummaryService {
     const config = await GlobalConfig.findOne({ key: "buyRate" });
     return config ? config.value : 16300;
   }
+  static async getSellRate() {
+    const config = await GlobalConfig.findOne({ key: "sellRate" });
+    return config ? config.value : 0;
+  }
   static getBusinessDayRange(dateStr) {
     const start = moment
       .tz(dateStr, "Asia/Kuala_Lumpur")
@@ -69,15 +73,23 @@ class SummaryService {
         const incomingUsdt = transaction.amount / transaction.rate;
         const actualUsdt = incomingUsdt * (1 - feeRate / 100);
 
+        const sellRate = await SummaryService.getSellRate();
+        const sellUsdt = sellRate > 0 ? transaction.amount / sellRate : 0;
+        const sellProfit = sellRate > 0 ? sellUsdt - incomingUsdt : 0;
+
         group.incomingCount += 1;
         group.incomingAmount += transaction.amount;
         group.incomingUsdt += incomingUsdt;
         group.actualIncomingUsdt += actualUsdt;
+        group.sellUsdt += sellUsdt;
+        group.sellProfit += sellProfit;
 
         summary.totals.incomingCount += 1;
         summary.totals.incomingAmount += transaction.amount;
         summary.totals.incomingUsdt += incomingUsdt;
         summary.totals.actualIncomingUsdt += actualUsdt;
+        summary.totals.sellUsdt += sellUsdt;
+        summary.totals.sellProfit += sellProfit;
         break;
 
       case "下发":
@@ -189,16 +201,23 @@ class SummaryService {
             : config.feeRate;
         const incomingUsdt = transaction.amount / transaction.rate;
         const actualUsdt = incomingUsdt * (1 - feeRate / 100);
+        const sellRate = await SummaryService.getSellRate();
+        const sellUsdt = sellRate > 0 ? transaction.amount / sellRate : 0;
+        const sellProfit = sellRate > 0 ? sellUsdt - incomingUsdt : 0;
 
         group.incomingCount -= 1;
         group.incomingAmount -= transaction.amount;
         group.incomingUsdt -= incomingUsdt;
         group.actualIncomingUsdt -= actualUsdt;
+        group.sellUsdt -= sellUsdt;
+        group.sellProfit -= sellProfit;
 
         summary.totals.incomingCount -= 1;
         summary.totals.incomingAmount -= transaction.amount;
         summary.totals.incomingUsdt -= incomingUsdt;
         summary.totals.actualIncomingUsdt -= actualUsdt;
+        summary.totals.sellUsdt -= sellUsdt;
+        summary.totals.sellProfit -= sellProfit;
         break;
 
       case "下发":
@@ -330,6 +349,8 @@ class SummaryService {
           incomingAmount: 0,
           incomingUsdt: 0,
           actualIncomingUsdt: 0,
+          sellUsdt: 0,
+          sellProfit: 0,
           outgoingCount: 0,
           outgoingUsdt: 0,
           payoutCount: 0,
@@ -357,16 +378,23 @@ class SummaryService {
 
               const incomingUsdt = amount / rate;
               const actualUsdt = incomingUsdt * (1 - feeRate / 100);
+              const sellRate = await SummaryService.getSellRate();
+              const sellUsdt = sellRate > 0 ? amount / sellRate : 0;
+              const sellProfit = sellRate > 0 ? sellUsdt - incomingUsdt : 0;
 
               group.incomingCount += 1;
               group.incomingAmount += amount;
               group.incomingUsdt += incomingUsdt;
               group.actualIncomingUsdt += actualUsdt;
+              group.sellUsdt += sellUsdt;
+              group.sellProfit += sellProfit;
 
               summary.totals.incomingCount += 1;
               summary.totals.incomingAmount += amount;
               summary.totals.incomingUsdt += incomingUsdt;
               summary.totals.actualIncomingUsdt += actualUsdt;
+              summary.totals.sellUsdt += sellUsdt;
+              summary.totals.sellProfit += sellProfit;
               break;
 
             case "下发":

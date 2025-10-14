@@ -6,6 +6,7 @@ const ConfigSchema = new mongoose.Schema({
   inRate: { type: Number, default: 0 },
   outRate: { type: Number, default: 0 },
   buyRate: { type: Number, default: 0 },
+  sellRate: { type: Number, default: 0 },
   handlingFee: { type: Number, default: 0 },
   operators: [String],
   isOpen: { type: Boolean, default: false },

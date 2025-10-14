@@ -208,6 +208,62 @@ router.get("/api/admin/buyrate", verifyPassword, async (req, res) => {
   }
 });
 
+router.put("/api/admin/sellrate", verifyPassword, async (req, res) => {
+  try {
+    const { sellRate } = req.body;
+    if (sellRate === undefined || sellRate === null || sellRate < 0) {
+      return res.status(400).json({
+        error: "请提供有效的 sellRate (必须大于等于0)",
+      });
+    }
+    const result = await GlobalConfig.findOneAndUpdate(
+      { key: "sellRate" },
+      {
+        value: sellRate,
+        updatedAt: new Date(),
+      },
+      {
+        new: true,
+        upsert: true,
+      }
+    );
+    res.json({
+      success: true,
+      data: {
+        key: "sellRate",
+        value: result.value,
+        updatedAt: result.updatedAt,
+      },
+    });
+  } catch (error) {
+    console.error("更新 sellRate 失败:", error);
+    res.status(500).json({
+      error: "更新 sellRate 失败",
+      message: error.message,
+    });
+  }
+});
+
+router.get("/api/admin/sellrate", verifyPassword, async (req, res) => {
+  try {
+    const config = await GlobalConfig.findOne({ key: "sellRate" });
+    const sellRate = config ? config.value : 0;
+    res.json({
+      success: true,
+      data: {
+        sellRate: sellRate,
+        updatedAt: config?.updatedAt,
+      },
+    });
+  } catch (error) {
+    console.error("获取 sellRate 失败:", error);
+    res.status(500).json({
+      error: "获取 sellRate 失败",
+      message: error.message,
+    });
+  }
+});
+
 router.post("/api/admin/risk-control", verifyPassword, async (req, res) => {
   try {
     const { amount, remark } = req.body;

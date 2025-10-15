@@ -21,6 +21,7 @@ const GroupSummarySchema = new mongoose.Schema(
     pendingUsdt: { type: Number, default: 0 },
     wallet: { type: Number, default: 0 },
     profit: { type: Number, default: 0 },
+    totalProfit: { type: Number, default: 0 },
   },
   { _id: false }
 );
@@ -46,6 +47,7 @@ const DailySummarySchema = new mongoose.Schema({
     pendingUsdt: { type: Number, default: 0 },
     wallet: { type: Number, default: 0 },
     profit: { type: Number, default: 0 },
+    totalProfit: { type: Number, default: 0 },
   },
   lastUpdated: { type: Date, default: Date.now },
   version: { type: Number, default: 1 },

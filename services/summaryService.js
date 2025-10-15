@@ -131,11 +131,13 @@ class SummaryService {
       (group.payoutUsdt || 0) +
       (group.payoutCommission || 0) +
       (group.payoutFees || 0);
-    group.profit =
+    group.profit = (group.incomingUsdt || 0) - (group.actualIncomingUsdt || 0);
+    group.totalProfit =
       (group.incomingUsdt || 0) -
       (group.actualIncomingUsdt || 0) +
       (group.payoutFees || 0) +
-      (group.payoutCommission || 0);
+      (group.payoutCommission || 0) +
+      (group.sellProfit || 0);
 
     summary.totals.shouldIssued =
       (summary.totals.actualIncomingUsdt || 0) -
@@ -150,9 +152,13 @@ class SummaryService {
       (summary.totals.payoutFees || 0);
     summary.totals.profit =
       (summary.totals.incomingUsdt || 0) -
+      (summary.totals.actualIncomingUsdt || 0);
+    summary.totals.totalProfit =
+      (summary.totals.incomingUsdt || 0) -
       (summary.totals.actualIncomingUsdt || 0) +
       (summary.totals.payoutFees || 0) +
-      (summary.totals.payoutCommission || 0);
+      (summary.totals.payoutCommission || 0) +
+      (summary.totals.sellProfit || 0);
 
     summary.lastUpdated = new Date();
     await summary.save();
@@ -259,11 +265,13 @@ class SummaryService {
       (group.payoutUsdt || 0) +
       (group.payoutCommission || 0) +
       (group.payoutFees || 0);
-    group.profit =
+    group.profit = (group.incomingUsdt || 0) - (group.actualIncomingUsdt || 0);
+    group.totalProfit =
       (group.incomingUsdt || 0) -
       (group.actualIncomingUsdt || 0) +
       (group.payoutFees || 0) +
-      (group.payoutCommission || 0);
+      (group.payoutCommission || 0) +
+      (group.sellProfit || 0);
 
     summary.totals.shouldIssued =
       (summary.totals.actualIncomingUsdt || 0) -
@@ -278,9 +286,13 @@ class SummaryService {
       (summary.totals.payoutFees || 0);
     summary.totals.profit =
       (summary.totals.incomingUsdt || 0) -
+      (summary.totals.actualIncomingUsdt || 0);
+    summary.totals.totalProfit =
+      (summary.totals.incomingUsdt || 0) -
       (summary.totals.actualIncomingUsdt || 0) +
       (summary.totals.payoutFees || 0) +
-      (summary.totals.payoutCommission || 0);
+      (summary.totals.payoutCommission || 0) +
+      (summary.totals.sellProfit || 0);
 
     summary.lastUpdated = new Date();
     await summary.save();
@@ -443,10 +455,13 @@ class SummaryService {
           (group.payoutCommission || 0) +
           (group.payoutFees || 0);
         group.profit =
+          (group.incomingUsdt || 0) - (group.actualIncomingUsdt || 0);
+        group.totalProfit =
           (group.incomingUsdt || 0) -
           (group.actualIncomingUsdt || 0) +
           (group.payoutFees || 0) +
-          (group.payoutCommission || 0);
+          (group.payoutCommission || 0) +
+          (group.sellProfit || 0);
 
         summary.groups.push(group);
       }
@@ -464,9 +479,13 @@ class SummaryService {
         (summary.totals.payoutFees || 0);
       summary.totals.profit =
         (summary.totals.incomingUsdt || 0) -
+        (summary.totals.actualIncomingUsdt || 0);
+      summary.totals.totalProfit =
+        (summary.totals.incomingUsdt || 0) -
         (summary.totals.actualIncomingUsdt || 0) +
         (summary.totals.payoutFees || 0) +
-        (summary.totals.payoutCommission || 0);
+        (summary.totals.payoutCommission || 0) +
+        (summary.totals.sellProfit || 0);
 
       summary.lastUpdated = new Date();
       await summary.save();

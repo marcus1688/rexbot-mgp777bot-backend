@@ -7,6 +7,7 @@ const Transaction = require("../models/transaction.model");
 const DailyReport = require("../models/report.model");
 const moment = require("moment-timezone");
 const SummaryService = require("../services/summaryService");
+const { formatMessageId, parseMessageId } = require("../utils/formatMessageId");
 
 let bot = null;
 const deleteConfirmations = new Map();
@@ -179,12 +180,14 @@ const formatReport = async (chatId, newTransactionId = null) => {
         const feeRate = t.feeRate !== undefined ? t.feeRate : config.feeRate;
         const actualUsdt = (t.amount / t.rate) * (1 - feeRate / 100);
         const feeAmount = (t.amount * feeRate) / 100;
-        const idLink = t.messageId ? `<code>${t.messageId}</code>` : `ID`;
+        const idLink = t.messageId
+          ? `<code>${formatMessageId(t.messageId)}</code>`
+          : `ID`;
 
         if (newTransactionId && t._id.toString() === newTransactionId) {
-          report += `${t.messageId} ${time}  ${formatNumber(t.amount)} / ${
-            t.rate
-          } * (${(1 - feeRate / 100)
+          report += `${formatMessageId(t.messageId)} ${time}  ${formatNumber(
+            t.amount
+          )} / ${t.rate} * (${(1 - feeRate / 100)
             .toFixed(4)
             .replace(/\.?0+$/, "")})=${actualUsdt.toFixed(
             2
@@ -224,7 +227,9 @@ const formatReport = async (chatId, newTransactionId = null) => {
       }
       代付显示.forEach((t) => {
         const time = formatTime(t.timestamp);
-        const idLink = t.messageId ? `<code>${t.messageId}</code>` : `ID`;
+        const idLink = t.messageId
+          ? `<code>${formatMessageId(t.messageId)}</code>`
+          : `ID`;
         const amountLink = t.messageId
           ? `<a href="${generateTelegramLink(
               chatId,
@@ -257,7 +262,9 @@ const formatReport = async (chatId, newTransactionId = null) => {
       }
       下发显示.forEach((t) => {
         const time = formatTime(t.timestamp);
-        const idLink = t.messageId ? `<code>${t.messageId}</code>` : `ID`;
+        const idLink = t.messageId
+          ? `<code>${formatMessageId(t.messageId)}</code>`
+          : `ID`;
         const usdtLink = t.messageId
           ? `<a href="${generateTelegramLink(chatId, t.messageId)}">${
               t.usdt
@@ -927,38 +934,52 @@ const setupBotHandlers = () => {
         return;
       }
 
-      if (text.match(/^撤销(\d+)$/)) {
-        const messageId = parseInt(text.match(/^撤销(\d+)$/)[1]);
+      if (text.match(/^撤销([a-z]*\d+)$/)) {
+        const formattedId = text.match(/^撤销([a-z]*\d+)$/)[1];
+
         if (!(await checkPermission(chatId, userId, msg))) {
           bot.sendMessage(chatId, "❌ 只有管理员可以撤销交易");
           return;
         }
-        const today = getTodayString();
-        const { start, end } = getBusinessDayRange(today);
-        const transaction = await Transaction.findOne({
-          messageId: messageId,
-          chatId: chatId.toString(),
-          timestamp: {
-            $gte: start,
-            $lte: end,
-          },
-        });
-        if (transaction) {
-          const type = transaction.type;
-          const amount =
-            transaction.type === "入款"
-              ? formatNumber(transaction.amount)
-              : transaction.usdt + "U";
-          await SummaryService.reverseTransaction(transaction, config);
-          await Transaction.deleteOne({ _id: transaction._id });
-          const report = await formatReport(chatId);
-          bot.sendMessage(chatId, `已撤销${type} ${amount}\n\n${report}`, {
-            parse_mode: "HTML",
-            disable_web_page_preview: true,
+
+        try {
+          const messageId = parseMessageId(formattedId);
+
+          const today = getTodayString();
+          const { start, end } = getBusinessDayRange(today);
+
+          const transaction = await Transaction.findOne({
+            messageId: messageId,
+            chatId: chatId.toString(),
+            timestamp: {
+              $gte: start,
+              $lte: end,
+            },
           });
-        } else {
-          bot.sendMessage(chatId, "找不到该交易记录");
+
+          if (transaction) {
+            const type = transaction.type;
+            const amount =
+              transaction.type === "入款"
+                ? formatNumber(transaction.amount)
+                : transaction.usdt + "U";
+
+            await SummaryService.reverseTransaction(transaction, config);
+            await Transaction.deleteOne({ _id: transaction._id });
+
+            const report = await formatReport(chatId);
+            bot.sendMessage(chatId, `已撤销${type} ${amount}\n\n${report}`, {
+              parse_mode: "HTML",
+              disable_web_page_preview: true,
+            });
+          } else {
+            bot.sendMessage(chatId, "找不到该交易记录");
+          }
+        } catch (error) {
+          console.error("撤销失败:", error);
+          bot.sendMessage(chatId, "❌ 无效的交易编号格式");
         }
+
         return;
       }
 
